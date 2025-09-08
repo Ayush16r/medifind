@@ -1,0 +1,206 @@
+from flask import Flask, request, jsonify, send_from_directory
+import csv
+import os
+import json
+from datetime import datetime
+import random
+import string
+import joblib
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+
+app = Flask(__name__)
+
+# ---------------- SAMPLE DATA ----------------
+HOSPITALS_DATA = [
+    {
+        "id": "h1",
+        "name": "City General Hospital",
+        "address": "123 Main Street, Downtown",
+        "phone": "+1-555-0101",
+        "rating": "4.5",
+        "available_beds": "25",
+        "distance": "1.2 km",
+        "wait_time": "15 min"
+    },
+    {
+        "id": "h2", 
+        "name": "St. Mary's Medical Center",
+        "address": "456 Oak Avenue, Midtown",
+        "phone": "+1-555-0102",
+        "rating": "4.8",
+        "available_beds": "18",
+        "distance": "2.1 km",
+        "wait_time": "25 min"
+    },
+    {
+        "id": "h3",
+        "name": "Community Health Clinic",
+        "address": "789 Pine Road, Suburbs", 
+        "phone": "+1-555-0103",
+        "rating": "4.2",
+        "available_beds": "8",
+        "distance": "3.5 km",
+        "wait_time": "45 min"
+    },
+    {
+        "id": "h4",
+        "name": "Emergency Care Center",
+        "address": "321 Elm Street, North District",
+        "phone": "+1-555-0104", 
+        "rating": "4.6",
+        "available_beds": "32",
+        "distance": "1.8 km",
+        "wait_time": "10 min"
+    }
+]
+
+# ---------------- INIT CSV FILES ----------------
+def init_csv_files():
+    """Initialize CSV files if they don't exist"""
+    
+    if not os.path.exists('hospitals.csv'):
+        with open('hospitals.csv', 'w', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=['id', 'name', 'address', 'phone', 'rating', 'available_beds', 'distance', 'wait_time', 'crowd_level'])
+            writer.writeheader()
+            for h in HOSPITALS_DATA:
+                # put dummy crowd level initially
+                h["crowd_level"] = "Medium"
+            writer.writerows(HOSPITALS_DATA)
+    
+    if not os.path.exists('bookings.csv'):
+        with open('bookings.csv', 'w', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=['booking_id', 'hospital_id', 'patient_name', 'phone', 'email', 'appointment_date', 'appointment_time', 'department', 'symptoms', 'created_at'])
+            writer.writeheader()
+
+# ---------------- ML MODEL ----------------
+def train_crowd_model():
+    """Train a simple ML model for crowd prediction"""
+    df = pd.read_csv("hospitals.csv")
+
+    # Convert wait_time like "15 min" -> 15
+    df["wait_time_num"] = df["wait_time"].str.replace(" min", "").astype(int)
+    df["available_beds_num"] = df["available_beds"].astype(int)
+
+    # If no labels yet, create them based on simple rules (bootstrap)
+    if "crowd_level" not in df or df["crowd_level"].isnull().all():
+        df["crowd_level"] = df.apply(lambda row: 
+            "Low" if row["wait_time_num"] < 20 and row["available_beds_num"] > 15 else
+            "Medium" if row["wait_time_num"] < 40 else "High", axis=1)
+
+    X = df[["available_beds_num", "wait_time_num"]]
+    y = df["crowd_level"]
+
+    model = RandomForestClassifier()
+    model.fit(X, y)
+
+    joblib.dump(model, "crowd_model.pkl")
+    return model
+
+def load_crowd_model():
+    if os.path.exists("crowd_model.pkl"):
+        return joblib.load("crowd_model.pkl")
+    else:
+        return train_crowd_model()
+
+crowd_model = None
+
+# ---------------- HELPERS ----------------
+def generate_booking_id():
+    return 'BK' + ''.join(random.choices(string.digits, k=6))
+
+def predict_crowd_level(available_beds, wait_time):
+    try:
+        return crowd_model.predict([[int(available_beds), int(wait_time)]])[0]
+    except:
+        # fallback rules
+        if int(wait_time) < 20 and int(available_beds) > 15:
+            return "Low"
+        elif int(wait_time) < 40:
+            return "Medium"
+        else:
+            return "High"
+
+# ---------------- ROUTES ----------------
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('.', filename)
+
+@app.route('/api/hospitals', methods=['GET'])
+def get_hospitals():
+    hospitals = []
+    try:
+        with open('hospitals.csv', 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                wait_time_num = int(row["wait_time"].split()[0])
+                crowd = predict_crowd_level(row["available_beds"], wait_time_num)
+                row["crowd_level"] = crowd
+                hospitals.append(row)
+        return jsonify(hospitals)
+    except Exception as e:
+        print(f"Error: {e}")
+        # fallback to default data
+        for h in HOSPITALS_DATA:
+            wait_time_num = int(h["wait_time"].split()[0])
+            h["crowd_level"] = predict_crowd_level(h["available_beds"], wait_time_num)
+        return jsonify(HOSPITALS_DATA)
+
+@app.route('/api/hospital/<hospital_id>', methods=['GET'])
+def get_hospital(hospital_id):
+    try:
+        with open('hospitals.csv', 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['id'] == hospital_id:
+                    wait_time_num = int(row["wait_time"].split()[0])
+                    row["crowd_level"] = predict_crowd_level(row["available_beds"], wait_time_num)
+                    return jsonify(row)
+        return jsonify({"error": "Hospital not found"}), 404
+    except Exception as e:
+        print(f"Error reading hospital: {e}")
+        return jsonify({"error": "Hospital not found"}), 404
+
+@app.route('/api/booking', methods=['POST'])
+def create_booking():
+    try:
+        booking_data = request.get_json()
+        booking_id = generate_booking_id()
+        booking_data['booking_id'] = booking_id
+        booking_data['created_at'] = datetime.now().isoformat()
+
+        with open('bookings.csv', 'a', newline='', encoding='utf-8') as file:
+            fieldnames = ['booking_id', 'hospital_id', 'patient_name', 'phone', 'email', 'appointment_date', 'appointment_time', 'department', 'symptoms', 'created_at']
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writerow(booking_data)
+
+        return jsonify({"success": True, "booking_id": booking_id, "message": "Booking created successfully"})
+    except Exception as e:
+        print(f"Error creating booking: {e}")
+        return jsonify({"success": False, "message": "Failed to create booking"}), 500
+
+@app.route('/api/bookings', methods=['GET'])
+def get_bookings():
+    bookings = []
+    try:
+        with open('bookings.csv', 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            bookings = list(reader)
+        return jsonify(bookings)
+    except Exception as e:
+        print(f"Error reading bookings: {e}")
+        return jsonify([])
+
+# ---------------- MAIN ----------------
+if __name__ == '__main__':
+    init_csv_files()
+    crowd_model = load_crowd_model()
+
+    print("🏥 MediFind Backend Started with AI Crowd Prediction!")
+    print("🌐 Server running at: http://localhost:5000")
+
+    app.run(debug=True, host='0.0.0.0', port=5000)

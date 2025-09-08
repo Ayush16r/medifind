@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - MediFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="results-container">
+            <div class="header">
+                <button onclick="goBack()" class="btn-back">← Back to Search</button>
+                <h1>Healthcare Providers Near You</h1>
+                <p id="searchInfo">Showing results for your location</p>
+            </div>
+
+            <div id="hospitalsList" class="hospitals-list">
+                <!-- Hospital cards will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Load hospitals when page loads
+        window.onload = function() {
+            loadHospitals();
+        };
+    </script>
+</body>
+</html>

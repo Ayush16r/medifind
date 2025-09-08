@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - MediFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="booking-container">
+            <button onclick="goBack()" class="btn-back">← Back to Results</button>
+            
+            <div class="card">
+                <h2>Book Appointment</h2>
+                <div id="hospitalInfo" class="hospital-info">
+                    <!-- Hospital info will be loaded here -->
+                </div>
+
+                <form id="bookingForm" class="form">
+                    <div class="input-group">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="patientName" placeholder="Patient Name" required>
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-icon">📞</span>
+                        <input type="tel" id="phone" placeholder="Phone Number" required>
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-icon">📧</span>
+                        <input type="email" id="email" placeholder="Email Address" required>
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-icon">📅</span>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+
+                    <select id="appointmentTime" required>
+                        <option value="">Select appointment time</option>
+                        <option value="09:00">09:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="15:00">03:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                    </select>
+
+                    <select id="department">
+                        <option value="">Select department (optional)</option>
+                        <option value="General Medicine">General Medicine</option>
+                        <option value="Emergency">Emergency</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                    </select>
+
+                    <textarea id="symptoms" placeholder="Describe your symptoms or reason for visit" rows="4"></textarea>
+
+                    <button type="submit" class="btn-primary">
+                        ✅ Confirm Booking
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        window.onload = function() {
+            loadHospitalForBooking();
+            setMinDate();
+        };
+    </script>
+</body>
+</html>

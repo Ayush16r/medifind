@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediFind - Hospital Search</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="search-card">
+            <div class="header">
+                <div class="icon">🏥</div>
+                <h1>MediFind</h1>
+                <p>Find nearby hospitals and clinics instantly</p>
+            </div>
+
+            <div class="card">
+                <h2>Search Healthcare Providers</h2>
+                <p class="subtitle">Enter your location to find available medical facilities</p>
+                
+                <form id="searchForm" class="form">
+                    <div class="input-group">
+                        <span class="input-icon">📍</span>
+                        <input type="text" id="location" placeholder="Enter your location" required>
+                    </div>
+
+                    <select id="serviceType">
+                        <option value="">Select service type</option>
+                        <option value="emergency">Emergency Care</option>
+                        <option value="general">General Medicine</option>
+                        <option value="surgery">Surgery</option>
+                        <option value="pediatrics">Pediatrics</option>
+                        <option value="cardiology">Cardiology</option>
+                        <option value="orthopedics">Orthopedics</option>
+                    </select>
+
+                    <select id="urgency">
+                        <option value="">Urgency level</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="routine">Routine</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary">
+                        🔍 Search Hospitals
+                    </button>
+                </form>
+            </div>
+
+            <p class="footer-text">Real-time availability and crowd information</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - MediFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="confirmation-container">
+            <div class="card">
+                <div class="success-header">
+                    <div class="success-icon">✅</div>
+                    <h2>Booking Confirmed!</h2>
+                    <p>Your appointment has been successfully booked</p>
+                </div>
+
+                <div id="bookingDetails" class="booking-details">
+                    <!-- Booking details will be loaded here -->
+                </div>
+
+                <div class="important-notes">
+                    <h4>Important Notes:</h4>
+                    <ul>
+                        <li>• Please arrive 15 minutes before your appointment</li>
+                        <li>• Bring a valid ID and insurance card</li>
+                        <li>• You will receive a confirmation call within 30 minutes</li>
+                        <li>• For emergency, call the hospital directly</li>
+                    </ul>
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="newSearch()" class="btn-primary">
+                        🏠 New Search
+                    </button>
+                    <button onclick="window.print()" class="btn-secondary">
+                        🖨️ Print Confirmation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        window.onload = function() {
+            loadBookingConfirmation();
+        };
+    </script>
+</body>
+</html>

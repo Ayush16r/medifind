@@ -1,0 +1,5 @@
+booking_id,hospital_id,patient_name,phone,email,appointment_date,appointment_time,department,symptoms,created_at
+BK814325,h1,Ayush ranjan,78282 98428,ayuking098@gmail.com,2025-09-14,14:00,Orthopedics,A,2025-09-08T09:39:05.125994
+BK399264,h2,Ayush ranjan ,78282 98428,ayuking098@gmail.com,2025-09-22,14:00,Cardiology,Eye paining ,2025-09-08T09:45:10.714898
+h1,Ayush ranjan ,(123) 456-7890,ayush16r@gmail.com,2025-09-12,14:00,Orthopedics,J,BK707126,2025-09-08T10:03:00.925824
+BK418567,h3,Ayush ranjan ,(123) 456-7890,ayuking098@gmail.com,2025-09-22,14:00,Orthopedics,Dx,2025-09-08T10:06:34.277476

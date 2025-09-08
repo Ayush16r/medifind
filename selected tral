@@ -1,0 +1,101 @@
+from flask import Flask, request, jsonify, send_from_directory
+from pymongo import MongoClient
+from datetime import datetime
+import random
+import string
+
+# ---------------- CONFIG ----------------
+MONGO_URI = "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/?retryWrites=true&w=majority&appName=HealXtrail"
+client = MongoClient(MONGO_URI)
+db = client['medifind']
+hospitals_col = db['hospitals']
+bookings_col = db['bookings']
+
+app = Flask(__name__)
+
+# ---------------- SAMPLE DATA ----------------
+SAMPLE_HOSPITALS = [
+    {"id": "h1", "name": "City General Hospital", "address": "123 Main Street, Downtown", "phone": "+1-555-0101", "rating": "4.5", "available_beds": 25, "distance": "1.2 km", "wait_time": "15 min"},
+    {"id": "h2", "name": "St. Mary's Medical Center", "address": "456 Oak Avenue, Midtown", "phone": "+1-555-0102", "rating": "4.8", "available_beds": 18, "distance": "2.1 km", "wait_time": "25 min"},
+    {"id": "h3", "name": "Community Health Clinic", "address": "789 Pine Road, Suburbs", "phone": "+1-555-0103", "rating": "4.2", "available_beds": 8, "distance": "3.5 km", "wait_time": "45 min"},
+    {"id": "h4", "name": "Emergency Care Center", "address": "321 Elm Street, North District", "phone": "+1-555-0104", "rating": "4.6", "available_beds": 32, "distance": "1.8 km", "wait_time": "10 min"}
+]
+
+# ---------------- HELPERS ----------------
+def generate_booking_id():
+    return 'BK' + ''.join(random.choices(string.digits, k=6))
+
+def serialize_doc(doc):
+    doc['_id'] = str(doc['_id'])
+    return doc
+
+def calculate_crowd_level(hospital_id, available_beds, wait_time):
+    """Dynamic crowd level based on number of bookings"""
+    bookings_count = bookings_col.count_documents({"hospital_id": hospital_id})
+    available_beds = int(available_beds)
+    wait_time = int(wait_time.split()[0])
+
+    if bookings_count == 0:
+        return "Empty"
+    elif bookings_count < available_beds // 2 and wait_time < 20:
+        return "Low"
+    elif bookings_count < available_beds and wait_time < 40:
+        return "Medium"
+    else:
+        return "High"
+
+def init_hospitals():
+    """Insert sample hospitals if DB is empty"""
+    if hospitals_col.count_documents({}) == 0:
+        hospitals_col.insert_many(SAMPLE_HOSPITALS)
+
+# ---------------- ROUTES ----------------
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('.', filename)
+
+@app.route('/api/hospitals', methods=['GET'])
+def get_hospitals():
+    location = request.args.get("location")
+    query = {}
+    if location:
+        query['address'] = {"$regex": location, "$options": "i"}  # search by location
+    
+    hospitals = []
+    for h in hospitals_col.find(query):
+        h['crowd_level'] = calculate_crowd_level(h["id"], h["available_beds"], h["wait_time"])
+        hospitals.append(serialize_doc(h))
+    return jsonify(hospitals)
+
+@app.route('/api/hospital/<hospital_id>', methods=['GET'])
+def get_hospital(hospital_id):
+    h = hospitals_col.find_one({"id": hospital_id})
+    if h:
+        h['crowd_level'] = calculate_crowd_level(h["id"], h["available_beds"], h["wait_time"])
+        return jsonify(serialize_doc(h))
+    else:
+        return jsonify({"error": "Hospital not found"}), 404
+
+@app.route('/api/booking', methods=['POST'])
+def create_booking():
+    booking_data = request.get_json()
+    booking_data['booking_id'] = generate_booking_id()
+    booking_data['created_at'] = datetime.now().isoformat()
+    bookings_col.insert_one(booking_data)
+    return jsonify({"success": True, "booking_id": booking_data['booking_id'], "message": "Booking created successfully"})
+
+@app.route('/api/bookings', methods=['GET'])
+def get_bookings():
+    bookings = [serialize_doc(b) for b in bookings_col.find()]
+    return jsonify(bookings)
+
+# ---------------- MAIN ----------------
+if __name__ == '__main__':
+    init_hospitals()
+    print("🏥 MediFind Backend Started with MongoDB + Real-Time Crowd Tracking!")
+    print("🌐 Server running at: http://localhost:5000")
+    app.run(debug=True, host='0.0.0.0', port=5000)

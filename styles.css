@@ -1,0 +1,373 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 50%, #f0f8ff 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.search-card, .results-container, .booking-container, .confirmation-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.results-container, .booking-container, .confirmation-container {
+    max-width: 800px;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 8px 32px rgba(33, 150, 243, 0.15);
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.icon {
+    width: 64px;
+    height: 64px;
+    background: #2196f3;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 32px;
+    color: white;
+    box-shadow: 0 4px 16px rgba(33, 150, 243, 0.3);
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: #1976d2;
+    margin-bottom: 8px;
+}
+
+h2 {
+    color: #2196f3;
+    margin-bottom: 8px;
+    font-size: 24px;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #666;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 12px 12px 40px;
+    border: 2px solid rgba(33, 150, 243, 0.2);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+select, textarea {
+    padding-left: 12px;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.btn-primary {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(33, 150, 243, 0.3);
+}
+
+.btn-primary:hover {
+    background: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
+
+.btn-secondary {
+    background: white;
+    color: #2196f3;
+    border: 2px solid #2196f3;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #f3f9ff;
+}
+
+.btn-back {
+    background: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.footer-text {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-top: 24px;
+}
+
+/* Hospital Cards */
+.hospitals-list {
+    display: grid;
+    gap: 20px;
+}
+
+.hospital-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(33, 150, 243, 0.1);
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    transition: all 0.3s ease;
+}
+
+.hospital-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(33, 150, 243, 0.15);
+}
+
+.hospital-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.hospital-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1976d2;
+    margin-bottom: 4px;
+}
+
+.hospital-address {
+    color: #666;
+    font-size: 14px;
+}
+
+.hospital-rating {
+    background: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.hospital-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.stat-item {
+    background: rgba(33, 150, 243, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #2196f3;
+}
+
+.crowd-low { color: #4caf50; }
+.crowd-medium { color: #ff9800; }
+.crowd-high { color: #f44336; }
+
+.hospital-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.btn-book {
+    flex: 1;
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-book:hover {
+    background: #1976d2;
+}
+
+.btn-call {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-call:hover {
+    background: #45a049;
+}
+
+/* Booking specific styles */
+.hospital-info {
+    background: rgba(33, 150, 243, 0.05);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-left: 4px solid #2196f3;
+}
+
+/* Confirmation styles */
+.success-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.success-icon {
+    width: 64px;
+    height: 64px;
+    background: #4caf50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 32px;
+    color: white;
+}
+
+.booking-details {
+    margin-bottom: 24px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: rgba(33, 150, 243, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid #2196f3;
+}
+
+.detail-icon {
+    color: #2196f3;
+    font-size: 16px;
+}
+
+.important-notes {
+    background: rgba(255, 193, 7, 0.1);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    margin-bottom: 24px;
+}
+
+.important-notes h4 {
+    color: #f57c00;
+    margin-bottom: 12px;
+}
+
+.important-notes ul {
+    list-style: none;
+    color: #666;
+}
+
+.important-notes li {
+    margin-bottom: 4px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.action-buttons button {
+    flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hospital-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .hospital-actions {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}

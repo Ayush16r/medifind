@@ -1,0 +1,5 @@
+id,name,address,phone,rating,available_beds,distance,wait_time,city
+h1,City General Hospital,123 Main Street, Downtown,+1-555-0101,4.5,25,1.2 km,15 min,Delhi
+h2,St. Mary's Medical Center,456 Oak Avenue, Midtown,+1-555-0102,4.8,18,2.1 km,25 min,Mumbai
+h3,Community Health Clinic,789 Pine Road, Suburbs,+1-555-0103,4.2,8,3.5 km,45 min,Bangalore
+h4,Emergency Care Center,321 Elm Street, North District,+1-555-0104,4.6,32,1.8 km,10 min,Delhi

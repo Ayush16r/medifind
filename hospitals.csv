@@ -1,0 +1,5 @@
+id,name,address,phone,rating,available_beds,crowd_level,distance,wait_time
+h1,City General Hospital,"123 Main Street, Downtown",+1-555-0101,4.5,24,Low,1.2 km,15 min
+h2,St. Mary's Medical Center,"456 Oak Avenue, Midtown",+1-555-0102,4.8,18,Medium,2.1 km,25 min
+h3,Community Health Clinic,"789 Pine Road, Suburbs",+1-555-0103,4.2,8,High,3.5 km,45 min
+h4,Emergency Care Center,"321 Elm Street, North District",+1-555-0104,4.6,32,Low,1.8 km,10 min
