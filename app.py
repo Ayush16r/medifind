@@ -1,35 +1,26 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
-import random
-import string
-from datetime import datetime
+from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import os
-
-# ---------------- MongoDB Setup ----------------
-MONGO_URI = "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/?retryWrites=true&w=majority&appName=HealXtrail"
-client = MongoClient(MONGO_URI)
-db = client['medifind']
-hospitals_col = db['hospitals']
-bookings_col = db['bookings']
+import random, string
+from datetime import datetime
 
 # ---------------- Flask Setup ----------------
 app = Flask(__name__)
-# Get Mongo URI from Render Environment Variables
-mongo_uri = os.environ.get("MONGO_URI")
-client = MongoClient(mongo_uri)
-db = client["healx"]
 
+# ---------------- MongoDB Setup ----------------
+# Use environment variable if available, else fallback to local URI
+MONGO_URI = os.environ.get("MONGO_URI") or "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/medifind?retryWrites=true&w=majority"
+client = MongoClient(MONGO_URI)
+db = client.get_database()  # gets the database specified in URI
+hospitals_col = db['hospitals']
+bookings_col = db['bookings']
 
-@app.route("/")
-def index():
-    return render_template("index.html")  # put index.html in /templates
 # ---------------- Helpers ----------------
 def generate_booking_id():
     return 'BK' + ''.join(random.choices(string.digits, k=6))
 
 def get_booking_counts():
-    """Count bookings per hospital"""
     counts = {}
     for b in bookings_col.find({}):
         hid = b["hospital_id"]
@@ -37,7 +28,6 @@ def get_booking_counts():
     return counts
 
 def calculate_crowd_level(hospital_id, available_beds, wait_time):
-    """Calculate dynamic crowd level"""
     counts = get_booking_counts()
     bookings = counts.get(hospital_id, 0)
     available_beds = int(available_beds)
@@ -53,7 +43,6 @@ def calculate_crowd_level(hospital_id, available_beds, wait_time):
         return "High"
 
 def serialize_hospital(h):
-    """Convert MongoDB document to JSON-friendly dict"""
     return {
         "id": str(h["_id"]),
         "name": h.get("name", ""),
@@ -61,37 +50,27 @@ def serialize_hospital(h):
         "location": h.get("location", ""),
         "phone": h.get("phone", ""),
         "rating": h.get("rating", ""),
-        "available_beds": h.get("available_beds", ""),
+        "available_beds": h.get("available_beds", 0),
         "distance": h.get("distance", ""),
-        "wait_time": h.get("wait_time", ""),
+        "wait_time": h.get("wait_time", "0 min"),
         "crowd_level": calculate_crowd_level(str(h["_id"]), h.get("available_beds", 0), h.get("wait_time", "0 min"))
     }
 
 # ---------------- Routes ----------------
-# @app.route('/')
-# def index():
-#     return send_from_directory('.', 'index.html')
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-@app.route('/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('.', filename)  
-
-@app.route('/api/hospitals', methods=['GET'])
+@app.route("/api/hospitals", methods=["GET"])
 def get_hospitals():
     location = request.args.get("location")
-    print("DEBUG: location query param =", location)   # <-- check what you receive
     query = {}
     if location:
         query["location"] = {"$regex": f"^{location}$", "$options": "i"}
-    print("DEBUG: Mongo query =", query)  # <-- see the actual query sent
     hospitals = hospitals_col.find(query)
-    result = [serialize_hospital(h) for h in hospitals]
-    return jsonify(result)
+    return jsonify([serialize_hospital(h) for h in hospitals])
 
-
-
-
-@app.route('/api/hospital/<hospital_id>', methods=['GET'])
+@app.route("/api/hospital/<hospital_id>", methods=["GET"])
 def get_hospital(hospital_id):
     try:
         h = hospitals_col.find_one({"_id": ObjectId(hospital_id)})
@@ -101,7 +80,7 @@ def get_hospital(hospital_id):
     except:
         return jsonify({"error": "Invalid Hospital ID"}), 400
 
-@app.route('/api/booking', methods=['POST'])
+@app.route("/api/booking", methods=["POST"])
 def create_booking():
     booking_data = request.get_json()
     booking_data['booking_id'] = generate_booking_id()
@@ -113,7 +92,7 @@ def create_booking():
         "message": "Booking created successfully"
     })
 
-@app.route('/api/bookings', methods=['GET'])
+@app.route("/api/bookings", methods=["GET"])
 def get_bookings():
     bookings = list(bookings_col.find({}))
     for b in bookings:
@@ -122,12 +101,10 @@ def get_bookings():
 
 # ---------------- Optional: Auto-add Location ----------------
 def add_locations():
-    # Map hospital names to their locations
     hospital_locations = {
         "City General Hospital": "Downtown",
         "St. Mary's Medical Center": "Midtown",
         "Community Health Clinic": "Suburbs"
-        # Add more as needed
     }
     for name, location in hospital_locations.items():
         hospitals_col.update_one(
@@ -137,8 +114,7 @@ def add_locations():
     print("✅ Hospital locations updated!")
 
 # ---------------- Main ----------------
-if __name__ == '__main__':
-    add_locations()  # automatically update hospitals with location
-    print("🏥 MediFind Backend Started with MongoDB + Real-Time Crowd!")
-    print("🌐 Server running at: http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    add_locations()
+    print("🏥 Backend Started")
+    app.run(debug=True, host="0.0.0.0", port=5000)
