@@ -14,7 +14,9 @@ bookings_col = db['bookings']
 
 # ---------------- Flask Setup ----------------
 app = Flask(__name__)
-
+@app.route('/')
+def home():
+    return "Hello Render!"
 # ---------------- Helpers ----------------
 def generate_booking_id():
     return 'BK' + ''.join(random.choices(string.digits, k=6))
