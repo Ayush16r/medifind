@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import random
 import string
 from datetime import datetime
@@ -21,9 +21,9 @@ client = MongoClient(mongo_uri)
 db = client["healx"]
 
 
-@app.route('/')
-def home():
-    return render_template("index.html") 
+@app.route("/")
+def index():
+    return render_template("index.html")  # put index.html in /templates
 # ---------------- Helpers ----------------
 def generate_booking_id():
     return 'BK' + ''.join(random.choices(string.digits, k=6))
