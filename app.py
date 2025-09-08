@@ -1,20 +1,27 @@
 from flask import Flask, render_template, request, jsonify
+import random
+import string
+from datetime import datetime
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import os
-import random, string
-from datetime import datetime
 
 # ---------------- Flask Setup ----------------
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder="templates",  # put HTML files here
+    static_folder="static"        # put CSS, JS, images here
+)
 
 # ---------------- MongoDB Setup ----------------
-# Use environment variable if available, else fallback to local URI
-MONGO_URI = os.environ.get("MONGO_URI") or "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/medifind?retryWrites=true&w=majority"
+MONGO_URI = os.environ.get("MONGO_URI")
+if not MONGO_URI:
+    raise Exception("Please set the MONGO_URI environment variable in Render")
+
 client = MongoClient(MONGO_URI)
-db = client.get_database()  # gets the database specified in URI
-hospitals_col = db['hospitals']
-bookings_col = db['bookings']
+db = client["medifind"]  # explicitly set your database
+hospitals_col = db["hospitals"]
+bookings_col = db["bookings"]
 
 # ---------------- Helpers ----------------
 def generate_booking_id():
@@ -31,7 +38,7 @@ def calculate_crowd_level(hospital_id, available_beds, wait_time):
     counts = get_booking_counts()
     bookings = counts.get(hospital_id, 0)
     available_beds = int(available_beds)
-    wait_time = int(wait_time.split()[0])  # '15 min' -> 15
+    wait_time = int(wait_time.split()[0]) if wait_time else 0
 
     if bookings == 0:
         return "Empty"
@@ -53,13 +60,21 @@ def serialize_hospital(h):
         "available_beds": h.get("available_beds", 0),
         "distance": h.get("distance", ""),
         "wait_time": h.get("wait_time", "0 min"),
-        "crowd_level": calculate_crowd_level(str(h["_id"]), h.get("available_beds", 0), h.get("wait_time", "0 min"))
+        "crowd_level": calculate_crowd_level(
+            str(h["_id"]),
+            h.get("available_beds", 0),
+            h.get("wait_time", "0 min")
+        )
     }
 
 # ---------------- Routes ----------------
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/results")
+def results():
+    return render_template("results.html")
 
 @app.route("/api/hospitals", methods=["GET"])
 def get_hospitals():
@@ -107,14 +122,11 @@ def add_locations():
         "Community Health Clinic": "Suburbs"
     }
     for name, location in hospital_locations.items():
-        hospitals_col.update_one(
-            {"name": name},
-            {"$set": {"location": location}}
-        )
+        hospitals_col.update_one({"name": name}, {"$set": {"location": location}})
     print("✅ Hospital locations updated!")
 
 # ---------------- Main ----------------
 if __name__ == "__main__":
     add_locations()
-    print("🏥 Backend Started")
+    print("🏥 MediFind Backend Started!")
     app.run(debug=True, host="0.0.0.0", port=5000)
