@@ -18,16 +18,26 @@ MONGO_URI = os.environ.get("MONGO_URI")
 if not MONGO_URI:
     raise Exception("Please set the MONGO_URI environment variable in Render")
 
-client = MongoClient(MONGO_URI)
-db = client["medifind"]
-hospitals_col = db["hospitals"]
-bookings_col = db["bookings"]
+# Use a global variable for fork-safe Gunicorn
+mongo_client = None
+db = None
+hospitals_col = None
+bookings_col = None
+
+def init_db():
+    global mongo_client, db, hospitals_col, bookings_col
+    if mongo_client is None:
+        mongo_client = MongoClient(MONGO_URI, tls=True, tlsAllowInvalidCertificates=False)
+        db = mongo_client["medifind"]
+        hospitals_col = db["hospitals"]
+        bookings_col = db["bookings"]
 
 # ---------------- Helpers ----------------
 def generate_booking_id():
     return 'BK' + ''.join(random.choices(string.digits, k=6))
 
 def get_booking_counts():
+    init_db()
     counts = {}
     for b in bookings_col.find({}):
         hid = b["hospital_id"]
@@ -86,15 +96,20 @@ def confirmation_page():
 
 @app.route("/api/hospitals", methods=["GET"])
 def get_hospitals():
+    init_db()
     location = request.args.get("location")
     query = {}
     if location:
         query["location"] = {"$regex": f"^{location}$", "$options": "i"}
-    hospitals = hospitals_col.find(query)
-    return jsonify([serialize_hospital(h) for h in hospitals])
+    try:
+        hospitals = list(hospitals_col.find(query))
+        return jsonify([serialize_hospital(h) for h in hospitals])
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch hospitals", "details": str(e)}), 500
 
 @app.route("/api/hospital/<hospital_id>", methods=["GET"])
 def get_hospital(hospital_id):
+    init_db()
     try:
         h = hospitals_col.find_one({"_id": ObjectId(hospital_id)})
         if not h:
@@ -105,6 +120,7 @@ def get_hospital(hospital_id):
 
 @app.route("/api/booking", methods=["POST"])
 def create_booking():
+    init_db()
     booking_data = request.get_json()
     booking_data['booking_id'] = generate_booking_id()
     booking_data['created_at'] = datetime.now().isoformat()
@@ -117,6 +133,7 @@ def create_booking():
 
 @app.route("/api/bookings", methods=["GET"])
 def get_bookings():
+    init_db()
     bookings = list(bookings_col.find({}))
     for b in bookings:
         b["_id"] = str(b["_id"])
@@ -124,6 +141,7 @@ def get_bookings():
 
 # ---------------- Optional: Auto-add Location ----------------
 def add_locations():
+    init_db()
     hospital_locations = {
         "City General Hospital": "Downtown",
         "St. Mary's Medical Center": "Midtown",
