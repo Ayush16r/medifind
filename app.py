@@ -9,8 +9,8 @@ import os
 # ---------------- Flask Setup ----------------
 app = Flask(
     __name__,
-    template_folder="templates",  # put HTML files here
-    static_folder="static"        # put CSS, JS, images here
+    template_folder="templates",
+    static_folder="static"
 )
 
 # ---------------- MongoDB Setup ----------------
@@ -19,7 +19,7 @@ if not MONGO_URI:
     raise Exception("Please set the MONGO_URI environment variable in Render")
 
 client = MongoClient(MONGO_URI)
-db = client["medifind"]  # explicitly set your database
+db = client["medifind"]
 hospitals_col = db["hospitals"]
 bookings_col = db["bookings"]
 
@@ -75,6 +75,14 @@ def index():
 @app.route("/results")
 def results():
     return render_template("results.html")
+
+@app.route("/booking")
+def booking_page():
+    return render_template("booking.html")
+
+@app.route("/confirmation")
+def confirmation_page():
+    return render_template("confirmation.html")
 
 @app.route("/api/hospitals", methods=["GET"])
 def get_hospitals():
