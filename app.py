@@ -68,9 +68,9 @@ def serialize_hospital(h):
     }
 
 # ---------------- Routes ----------------
-@app.route('/')
-def index():
-    return send_from_directory('.', 'index.html')
+# @app.route('/')
+# def index():
+#     return send_from_directory('.', 'index.html')
 
 @app.route('/<path:filename>')
 def serve_static(filename):
