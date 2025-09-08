@@ -4,6 +4,7 @@ import string
 from datetime import datetime
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import os
 
 # ---------------- MongoDB Setup ----------------
 MONGO_URI = "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/?retryWrites=true&w=majority&appName=HealXtrail"
@@ -14,6 +15,12 @@ bookings_col = db['bookings']
 
 # ---------------- Flask Setup ----------------
 app = Flask(__name__)
+# Get Mongo URI from Render Environment Variables
+mongo_uri = os.environ.get("MONGO_URI")
+client = MongoClient(mongo_uri)
+db = client["healx"]
+
+
 @app.route('/')
 def home():
     return "Hello Render!"
