@@ -23,7 +23,7 @@ db = client["healx"]
 
 @app.route('/')
 def home():
-    return "Hello Render!"
+    return render_template("index.html") 
 # ---------------- Helpers ----------------
 def generate_booking_id():
     return 'BK' + ''.join(random.choices(string.digits, k=6))
