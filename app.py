@@ -15,12 +15,16 @@ app = Flask(
 
 # ---------------- MongoDB Setup ----------------
 # MONGO_URI = os.environ.get("MONGO_URI")
-# if not MONGO_URI:
-#     raise Exception("Please set the MONGO_URI environment variable in Render")
+MONGO_URI = os.environ.get("MONGO_URI")
+DB_NAME = os.environ.get("DB_NAME", "mydb")   
+COLL = os.environ.get("COLL", "bookings") 
+
+if not MONGO_URI:
+    raise Exception("Please set the MONGO_URI environment variable in Render")
 
 # ---------------- MongoDB Setup ----------------
-MONGO_URI = "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/?retryWrites=true&w=majority&appName=HealXtrail"
-client = MongoClient(MONGO_URI)
+# MONGO_URI = "mongodb+srv://ayush16r:Ayush16r@healxtrail.nlpleiz.mongodb.net/?retryWrites=true&w=majority&appName=HealXtrail"
+# client = MongoClient(MONGO_URI)
 
 # Use a global variable for fork-safe Gunicorn
 mongo_client = None
